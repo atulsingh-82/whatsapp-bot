@@ -1,0 +1,30 @@
+{
+  "autoReplies": [
+    {
+      "keyword": "hello",
+      "reply": "Hello! 👋 Atul ke bot mein aapka swagat hai!"
+    },
+    {
+      "keyword": "hi",
+      "reply": "Hi! Kaise ho? 😊 Atul abhi busy hai, baad mein baat karta hai."
+    },
+    {
+      "keyword": "kahan hai",
+      "reply": "Atul ghar pe hai! 🏠 Message dekh ke reply karega."
+    },
+    {
+      "keyword": "number",
+      "reply": "Bhai number to already hai tumhare paas 😄"
+    },
+    {
+      "keyword": "hlo",
+      "reply": "hii dear."
+    }
+  ],
+  "status": {
+    "busy": true,
+    "message": "So raha hoon 😴",
+    "freeAt": "Subah"
+  },
+  "songEnabled": true
+}

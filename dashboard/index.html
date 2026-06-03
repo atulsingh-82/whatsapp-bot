@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Atul's WhatsApp Bot</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --green: #25D366;
+    --green-dark: #128C7E;
+    --bg: #0a0a0a;
+    --card: #111;
+    --border: #222;
+    --text: #f0f0f0;
+    --muted: #666;
+    --red: #ff4444;
+    --yellow: #FFB347;
+  }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 80px 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    padding: 20px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header p { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,0,0,0.25);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4cff91;
+    animation: pulse 1.5s infinite;
+  }
+  .dot.red { background: var(--red); }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.4; }
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 88px;
+    z-index: 99;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+
+  /* Content */
+  .content { padding: 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Toggle Switch */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .toggle-label { font-size: 14px; font-weight: 600; }
+  .toggle-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: #333;
+    border-radius: 28px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .slider:before {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    left: 4px; bottom: 4px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+  input:checked + .slider { background: var(--green); }
+  input:checked + .slider:before { transform: translateX(24px); }
+
+  /* Inputs */
+  .field {
+    margin-bottom: 12px;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--green);
+  }
+
+  /* Buttons */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-green:hover { background: #1fb855; }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  /* Reply List */
+  .reply-item {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .reply-kw {
+    display: inline-block;
+    background: rgba(37,211,102,0.15);
+    color: var(--green);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .reply-text { font-size: 13px; color: #ccc; }
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--red);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+    flex-shrink: 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--green);
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 999;
+    transition: transform 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 30px 20px;
+    font-size: 13px;
+  }
+  .empty .icon { font-size: 32px; margin-bottom: 8px; }
+
+  /* Busy status big card */
+  .busy-active {
+    background: linear-gradient(135deg, #1a0000, #2a0000);
+    border-color: var(--red);
+  }
+  .busy-badge {
+    background: var(--red);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🤖 Atul's Bot Dashboard</h1>
+  <p>WhatsApp Auto-Reply Manager</p>
+  <div class="status-pill">
+    <div class="dot" id="botDot"></div>
+    <span id="botStatusText">Online</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('status', this)">📌 Status</button>
+  <button class="tab" onclick="switchTab('replies', this)">💬 Replies</button>
+  <button class="tab" onclick="switchTab('settings', this)">⚙️ Settings</button>
+</div>
+
+<!-- STATUS TAB -->
+<div class="content">
+<div class="section active" id="tab-status">
+
+  <!-- Current Status Card -->
+  <div class="card" id="statusCard">
+    <div class="card-title">🟢 Current Status</div>
+    <div id="currentStatusDisplay">
+      <div style="color: #4cff91; font-weight: 600; font-size: 15px;">✅ Available</div>
+      <div style="color: var(--muted); font-size: 12px; margin-top: 4px;">Koi bhi message kar sakta hai</div>
+    </div>
+  </div>
+
+  <!-- QR Code Card -->
+  <div class="card">
+    <div class="card-title">📷 Scan QR Code</div>
+    <div id="qrContainer" style="text-align:center; padding: 10px 0;">
+      <div class="empty"><div class="icon">🔐</div>QR code load ho raha hai...</div>
+    </div>
+    <div id="qrHint" style="margin-top: 12px; font-size: 12px; color: var(--muted);">
+      Bot start hone par QR code yaha dikh jayega. Agar nahi aata, terminal mein QR dekh kar scan karo.
+    </div>
+  </div>
+
+  <!-- Set Busy -->
+  <div class="card">
+    <div class="card-title">🔴 Busy Mode Set Karo</div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Busy Mode</div>
+        <div class="toggle-sub">ON hoga to busy reply jayega</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="busyToggle" onchange="handleBusyToggle()">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div id="busyFields">
+      <div class="field">
+        <label>📝 Kya kar raha hai?</label>
+        <input type="text" id="busyMessage" placeholder="e.g. DSA practice kar raha hoon" />
+      </div>
+      <div class="field">
+        <label>⏰ Kab free hoga?</label>
+        <input type="text" id="freeAt" placeholder="e.g. Raat 8 baje, Ya 2 ghante baad" />
+      </div>
+      <button class="btn btn-green" onclick="saveStatus()">💾 Status Update Karo</button>
+    </div>
+  </div>
+
+  <!-- Quick Status buttons -->
+  <div class="card">
+    <div class="card-title">⚡ Quick Status</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <button class="btn btn-outline" onclick="quickStatus('Coding kar raha hoon', '2 ghante baad')">💻 Coding</button>
+      <button class="btn btn-outline" onclick="quickStatus('Padhai chal rahi hai', 'Shaam ko')">📚 Study</button>
+      <button class="btn btn-outline" onclick="quickStatus('So raha hoon 😴', 'Subah')">😴 Sleeping</button>
+      <button class="btn btn-outline" onclick="quickStatus('Khaana kha raha hoon', '30 min mein')">🍛 Eating</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- REPLIES TAB -->
+<div class="section" id="tab-replies">
+
+  <div class="card">
+    <div class="card-title">➕ New Auto Reply Add Karo</div>
+    <div class="field">
+      <label>🔑 Keyword (jo message mein aaye)</label>
+      <input type="text" id="newKeyword" placeholder="e.g. help, location, price" />
+    </div>
+    <div class="field">
+      <label>💬 Reply (bot kya bolega)</label>
+      <textarea id="newReply" rows="3" placeholder="e.g. Mera ghar Lucknow mein hai! 📍"></textarea>
+    </div>
+    <button class="btn btn-green" onclick="addReply()">✅ Add Reply</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Saved Replies</div>
+    <div id="repliesList"><div class="empty"><div class="icon">💬</div>Loading...</div></div>
+  </div>
+
+</div>
+
+<!-- SETTINGS TAB -->
+<div class="section" id="tab-settings">
+
+  <div class="card">
+    <div class="card-title">🎵 Song Feature</div>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">YouTube Song Search</div>
+        <div class="toggle-sub">Koi song name likhe to link milega</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="songToggle" onchange="toggleSong()">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div style="background: #1a1a1a; border-radius: 8px; padding: 12px; font-size: 12px; color: var(--muted);">
+      💡 <b>Kaise kaam karta hai:</b><br>
+      Koi "xyz song" ya "xyz gaana" likhe → Bot YouTube link + download page bhejega
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ℹ️ Bot Info</div>
+    <div style="font-size: 13px; line-height: 2; color: #ccc;">
+      <div>📦 <b>Version:</b> 1.0</div>
+      <div>🤖 <b>Library:</b> whatsapp-web.js</div>
+      <div>🎵 <b>Song:</b> YouTube Search + Y2Mate</div>
+      <div>📱 <b>Made for:</b> Atul Singh</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📖 How to Use</div>
+    <div style="font-size: 12px; color: #aaa; line-height: 1.8;">
+      <b>1.</b> Bot start karo: <code style="background:#1a1a1a;padding:2px 6px;border-radius:4px;">npm start</code><br>
+      <b>2.</b> QR code scan karo WhatsApp se<br>
+      <b>3.</b> Dashboard kholo phone pe<br>
+      <b>4.</b> Status/Replies manage karo<br>
+      <b>5.</b> Enjoy! 🎉
+    </div>
+  </div>
+
+</div>
+</div><!-- end content -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+let config = {};
+
+async function loadConfig() {
+  const res = await fetch('/api/config');
+  config = await res.json();
+  updateUI();
+}
+
+function updateUI() {
+  // Status
+  const busy = config.status?.busy;
+  const statusCard = document.getElementById('currentStatusDisplay');
+  const dot = document.getElementById('botDot');
+  const statusText = document.getElementById('botStatusText');
+
+  if (busy) {
+    dot.className = 'dot red';
+    statusText.textContent = 'Busy Mode ON';
+    statusCard.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="color:var(--red);font-weight:700;font-size:15px;">🔴 BUSY</span>
+        <span class="busy-badge">AUTO REPLY ON</span>
+      </div>
+      <div style="font-size:14px;margin-bottom:4px;">${config.status.message || 'Kaam chal raha hai'}</div>
+      ${config.status.freeAt ? `<div style="font-size:12px;color:var(--muted);">⏰ Free: ${config.status.freeAt}</div>` : ''}
+    `;
+    document.getElementById('busyToggle').checked = true;
+    document.getElementById('busyMessage').value = config.status.message || '';
+    document.getElementById('freeAt').value = config.status.freeAt || '';
+  } else {
+    dot.className = 'dot';
+    statusText.textContent = 'Available';
+    statusCard.innerHTML = `
+      <div style="color:#4cff91;font-weight:600;font-size:15px;">✅ Available</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px;">Koi bhi message kar sakta hai</div>
+    `;
+    document.getElementById('busyToggle').checked = false;
+  }
+
+  // Replies
+  renderReplies();
+
+  // Song toggle
+  document.getElementById('songToggle').checked = config.songEnabled !== false;
+  loadQr();
+}
+
+async function loadQr() {
+  try {
+    const res = await fetch('/api/qr');
+    const data = await res.json();
+    const container = document.getElementById('qrContainer');
+
+    if (data.available && data.dataUrl) {
+      container.innerHTML = `
+        <img id="qrImage" src="${data.dataUrl}" alt="WhatsApp QR" style="max-width:100%;height:auto;display:block;margin:auto;" />
+        <div style="margin-top:8px;color:#aaa;font-size:12px;">QR last updated: ${new Date(data.updatedAt).toLocaleTimeString()}</div>
+      `;
+      return;
+    }
+
+    container.innerHTML = '<div class="empty"><div class="icon">🔐</div>QR code ready nahi hai. Bot chalao aur terminal me QR scan karo.</div>';
+  } catch (err) {
+    const container = document.getElementById('qrContainer');
+    container.innerHTML = '<div class="empty"><div class="icon">⚠️</div>QR data load nahi hua. Refresh karo.</div>';
+  }
+}
+
+function renderReplies() {
+  const list = document.getElementById('repliesList');
+  const replies = config.autoReplies || [];
+  if (replies.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="icon">💬</div>Koi reply set nahi hai abhi</div>';
+    return;
+  }
+  list.innerHTML = replies.map((r, i) => `
+    <div class="reply-item">
+      <div style="flex:1">
+        <span class="reply-kw">${r.keyword}</span>
+        <div class="reply-text">${r.reply}</div>
+      </div>
+      <button class="del-btn" onclick="deleteReply(${i})">🗑</button>
+    </div>
+  `).join('');
+}
+
+function handleBusyToggle() {
+  const isChecked = document.getElementById('busyToggle').checked;
+  if (!isChecked) {
+    // Turn off busy immediately
+    fetch('/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ busy: false, message: '', freeAt: '' })
+    }).then(() => { loadConfig(); showToast('✅ Ab Available ho gaye!'); });
+  }
+}
+
+async function saveStatus() {
+  const busy = document.getElementById('busyToggle').checked;
+  const message = document.getElementById('busyMessage').value;
+  const freeAt = document.getElementById('freeAt').value;
+
+  await fetch('/api/status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ busy, message, freeAt })
+  });
+  await loadConfig();
+  showToast(busy ? '🔴 Busy mode ON!' : '✅ Available ho gaye!');
+}
+
+async function quickStatus(message, freeAt) {
+  document.getElementById('busyToggle').checked = true;
+  document.getElementById('busyMessage').value = message;
+  document.getElementById('freeAt').value = freeAt;
+  await saveStatus();
+}
+
+async function addReply() {
+  const keyword = document.getElementById('newKeyword').value.trim();
+  const reply = document.getElementById('newReply').value.trim();
+  if (!keyword || !reply) { showToast('❌ Keyword aur reply dono bharo!', true); return; }
+
+  const res = await fetch('/api/replies', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ keyword, reply })
+  });
+  const data = await res.json();
+  if (data.success) {
+    config.autoReplies = data.autoReplies;
+    renderReplies();
+    document.getElementById('newKeyword').value = '';
+    document.getElementById('newReply').value = '';
+    showToast('✅ Reply add ho gaya!');
+  }
+}
+
+async function deleteReply(index) {
+  const res = await fetch(`/api/replies/${index}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) {
+    config.autoReplies = data.autoReplies;
+    renderReplies();
+    showToast('🗑 Reply delete ho gaya');
+  }
+}
+
+async function toggleSong() {
+  const enabled = document.getElementById('songToggle').checked;
+  await fetch('/api/song-toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled })
+  });
+  showToast(enabled ? '🎵 Song feature ON!' : '🔇 Song feature OFF');
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+}
+
+let toastTimer;
+function showToast(msg, error = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.background = error ? '#ff4444' : 'var(--green)';
+  toast.style.color = error ? '#fff' : '#000';
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+loadConfig();
+setInterval(loadConfig, 10000); // Auto refresh every 10s
+setInterval(loadQr, 5000); // QR polling every 5s
+</script>
+</body>
+</html>
