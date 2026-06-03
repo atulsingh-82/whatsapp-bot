@@ -1,4 +1,5 @@
-run = "bash -lc 'npm install && PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium PUPPETEER_SKIP_DOWNLOAD=1 npm run start'"
+run = "npm run start"
+build = "npm install"
 install = "npm install"
 language = "nodejs"
 entrypoint = "start.js"
